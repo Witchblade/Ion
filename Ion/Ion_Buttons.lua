@@ -1753,8 +1753,9 @@ function BUTTON:MACRO_PlaceSpell(action1, action2, hasAction)
 	 	spell, subName = GetSpellBookItemName(action1, action2)
 	 	_, spellID = GetSpellBookItemInfo(action1, action2)
 
-	 	--print(GetSpellBookItemName(action1, action2))
-	 	--spell = GetSpellInfo(spellID)
+        --print(GetSpellBookItemName(action1, action2))
+        --print(GetSpellBookItemInfo(action1, action2))
+        --spell = GetSpellInfo(spellID)
 
 	 	self.data.macro_Text = self:AutoWriteMacro(spell, subName)
 	 	self.data.macro_Auto = spell..";"..subName
@@ -2292,7 +2293,6 @@ function BUTTON:MACRO_SetSpellTooltip(spell)
 		local spell_id = sIndex[spell].spellID
 
 		if (morphSpells[spell_id]) then
-
 			if (self.UberTooltips) then
 				GameTooltip:SetHyperlink("spell:"..morphSpells[spell_id])
 			else
@@ -2301,9 +2301,10 @@ function BUTTON:MACRO_SetSpellTooltip(spell)
 			end
 
 		elseif (self.UberTooltips) then
-			GameTooltip:SetSpellBookItem(sIndex[spell].index, sIndex[spell].booktype)
+            GameTooltip:SetSpellByID(spell_id)
 		else
-			GameTooltip:SetText(sIndex[spell].spellName, 1, 1, 1)
+            local spell = GetSpellInfo(spell_id)
+            GameTooltip:SetText(spell, 1, 1, 1)
 		end
 
 		self.UpdateTooltip = macroButton_SetTooltip
