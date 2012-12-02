@@ -610,8 +610,6 @@ local flyoutBarUpdater = CreateFrame("Frame", nil, UIParent)
 	flyoutBarUpdater:Hide()
 
 function BUTTON:Flyout_UpdateButtons(init)
-        -- fix for flyouts - slot variable needed to be local, not global
-        local slot
 
 	if (self.flyout) then
 
