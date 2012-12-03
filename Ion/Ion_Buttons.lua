@@ -50,6 +50,7 @@ local GetMacroInfo = _G.GetMacroInfo
 local GetSpellCooldown = _G.GetSpellCooldown
 local GetSpellTexture = _G.GetSpellTexture
 local GetSpellCount = _G.GetSpellCount
+local GetSpellCharges = _G.GetSpellCharges
 local IsCurrentSpell = _G.IsCurrentSpell
 local IsAutoRepeatSpell = _G.IsAutoRepeatSpell
 local IsAttackSpell = _G.IsAttackSpell
@@ -1018,14 +1019,21 @@ end
 
 function BUTTON:MACRO_SetSpellState(spell)
 
+    -- I don't think SpellCount is used anymore
 	if (GetSpellCount(spell) and  GetSpellCount(spell) > 1) then
-
 		self.count:SetText(GetSpellCount(spell))
-	else
-		self.count:SetText("")
 	end
 
-	if (cIndex[spell:lower()]) then
+    local charges, _, _, duration = GetSpellCharges(spell);
+    if (charges) then
+        if (charges>=0) then
+            self.count:SetText(charges);
+        else
+            self.count:SetText("");
+        end
+    end
+
+    if (cIndex[spell:lower()]) then
 
 		spell = cIndex[spell:lower()].spellID
 
@@ -1709,6 +1717,19 @@ BUTTON.MACRO_UPDATE_EXTRA_ACTIONBAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
 
 --for 4.x compatibility
 BUTTON.MACRO_UPDATE_BONUS_ACTIONBAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
+
+
+function BUTTON:MACRO_SPELL_UPDATE_CHARGES(...)
+    local spell = self.macrospell;
+    local charges, _, _, duration = GetSpellCharges(spell);
+    if (charges) then
+        if (charges>=0) then
+            self.count:SetText(charges);
+        else
+            self.count:SetText("");
+        end
+    end
+end
 
 function BUTTON:MACRO_OnEvent(...)
 
@@ -2453,6 +2474,8 @@ function BUTTON:MACRO_OnShow(...)
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
 
+    self:RegisterEvent("SPELL_UPDATE_CHARGES")
+
 	self:RegisterEvent("RUNE_POWER_UPDATE")
 
 	self:RegisterEvent("TRADE_SKILL_SHOW")
@@ -2505,7 +2528,9 @@ function BUTTON:MACRO_OnHide(...)
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:UnregisterEvent("ACTIONBAR_UPDATE_STATE")
 
-	self:UnregisterEvent("RUNE_POWER_UPDATE")
+    self:UnregisterEvent("SPELL_UPDATE_CHARGES")
+
+    self:UnregisterEvent("RUNE_POWER_UPDATE")
 
 	self:UnregisterEvent("TRADE_SKILL_SHOW")
 	self:UnregisterEvent("TRADE_SKILL_CLOSE")
