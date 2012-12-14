@@ -925,7 +925,7 @@ function BUTTON:MACRO_UpdateIcon(...)
 
 	self.updateMacroIcon = nil
 
-	local spell, item, show, texture = self.macrospell, self.macroitem, self.macroshow or self.macroicon
+	local spell, item, show, texture = self.macrospell, self.macroitem, self.macroshow, self.macroicon
 
 	if (self.actionID) then
 
@@ -933,15 +933,17 @@ function BUTTON:MACRO_UpdateIcon(...)
 
 	elseif (show and #show>0) then
 
-    		if(GetItemInfo(show) or ItemCache[show]) then
-			texture = self:MACRO_SetItemIcon(show)
-    		else
+        if(GetItemInfo(show) or ItemCache[show]) then
+            texture = self:MACRO_SetItemIcon(show)
+        else
 			texture = self:MACRO_SetSpellIcon(show)
-    		end
+            self:MACRO_SetSpellState(show);
+        end
 
 	elseif (spell and #spell>0) then
 
 		texture = self:MACRO_SetSpellIcon(spell)
+        self:MACRO_SetSpellState(spell);
 
 	elseif (item and #item>0) then
 
@@ -1019,18 +1021,16 @@ end
 
 function BUTTON:MACRO_SetSpellState(spell)
 
-    -- I don't think SpellCount is used anymore
-	if (GetSpellCount(spell) and  GetSpellCount(spell) > 1) then
-		self.count:SetText(GetSpellCount(spell))
-	end
+    local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
+    if (maxCharges and maxCharges > 1) then
+        self.count:SetText(charges)
+    else
+        self.count:SetText("")
+    end
 
-    local charges, _, _, duration = GetSpellCharges(spell);
-    if (charges) then
-        if (charges>=0) then
-            self.count:SetText(charges);
-        else
-            self.count:SetText("");
-        end
+    count = GetSpellCount(spell)
+    if (count and count > 0) then
+        self.count:SetText(count)
     end
 
     if (cIndex[spell:lower()]) then
@@ -1114,13 +1114,13 @@ function BUTTON:MACRO_UpdateState(...)
 
 	elseif (show and #show>0) then
 
-    		if(GetItemInfo(show) or ItemCache[show]) then
-			self:MACRO_SetItemState(show)
-    		else
-			self:MACRO_SetSpellState(show)
-    		end
+        if (GetItemInfo(show) or ItemCache[show]) then
+            self:MACRO_SetItemState(show)
+        else
+            self:MACRO_SetSpellState(show)
+        end
 
-	elseif (spell and #spell>0) then
+    elseif (spell and #spell>0) then
 
 		self:MACRO_SetSpellState(spell)
 
@@ -1130,14 +1130,14 @@ function BUTTON:MACRO_UpdateState(...)
 
 	elseif (self:GetAttribute("macroShow")) then
 
-		show = self:GetAttribute("macroShow")
+        show = self:GetAttribute("macroShow")
 
-    		if(GetItemInfo(show) or ItemCache[show]) then
-			self:MACRO_SetItemState(show)
-    		else
-			self:MACRO_SetSpellState(show)
-    		end
-	else
+        if (GetItemInfo(show) or ItemCache[show]) then
+            self:MACRO_SetItemState(show)
+        else
+            self:MACRO_SetSpellState(show)
+        end
+    else
 		self:SetChecked(nil)
 		self.count:SetText("")
 	end
@@ -1357,13 +1357,15 @@ end
 
 function BUTTON:MACRO_UpdateUsableSpell(spell)
 
-	spell = spell:lower()
+    local isUsable, notEnoughMana
+	local spellName = spell:lower()
 
 	--- necessary for spells changing of subtype between specs, ie, Rain of Fire() and Rain of Fire(Destruction)
-	if (sIndex[spell]) then
-		isUsable, notEnoughMana = IsUsableSpell(sIndex[spell].spellID)
+    --- unable to reproduce this but will leave it in here for now
+	if (sIndex[spellName]) then
+		isUsable, notEnoughMana = IsUsableSpell(sIndex[spellName].spellID)
 	else
-		local isUsable, notEnoughMana = IsUsableSpell(spell)
+		isUsable, notEnoughMana = IsUsableSpell(spell)
 	end
 
 	if (notEnoughMana) then
@@ -1556,6 +1558,10 @@ function BUTTON:MACRO_ACTIONBAR_UPDATE_STATE(...)
 
 end
 
+function BUTTON:MACRO_ACTIONBAR_UPDATE_USABLE(...)
+    -- TODO
+end
+
 BUTTON.MACRO_COMPANION_UPDATE = BUTTON.MACRO_ACTIONBAR_UPDATE_STATE
 BUTTON.MACRO_TRADE_SKILL_SHOW = BUTTON.MACRO_ACTIONBAR_UPDATE_STATE
 BUTTON.MACRO_TRADE_SKILL_CLOSE = BUTTON.MACRO_ACTIONBAR_UPDATE_STATE
@@ -1727,14 +1733,14 @@ BUTTON.MACRO_UPDATE_BONUS_ACTIONBAR = BUTTON.MACRO_UPDATE_VEHICLE_ACTIONBAR
 
 
 function BUTTON:MACRO_SPELL_UPDATE_CHARGES(...)
-    local spell = self.macrospell;
-    local charges, _, _, duration = GetSpellCharges(spell);
-    if (charges) then
-        if (charges>=0) then
-            self.count:SetText(charges);
+
+    local spell = self.macrospell
+    local charges, maxCharges, chargeStart, chargeDuration = GetSpellCharges(spell)
+
+    if (maxCharges and maxCharges > 1) then
+        self.count:SetText(charges)
         else
-            self.count:SetText("");
-        end
+        self.count:SetText("")
     end
 end
 
@@ -2480,6 +2486,7 @@ function BUTTON:MACRO_OnShow(...)
 	self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 	self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
+    self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
 
     self:RegisterEvent("SPELL_UPDATE_CHARGES")
 
@@ -2534,6 +2541,7 @@ function BUTTON:MACRO_OnHide(...)
 	self:UnregisterEvent("ACTIONBAR_SLOT_CHANGED")
 	self:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 	self:UnregisterEvent("ACTIONBAR_UPDATE_STATE")
+    self:UnregisterEvent("ACTIONBAR_UPDATE_USABLE")
 
     self:UnregisterEvent("SPELL_UPDATE_CHARGES")
 

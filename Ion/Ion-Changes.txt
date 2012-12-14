@@ -1,5 +1,6 @@
 Hydrogen-5
-- charges (scent of blood) are functionnal again
+- Spell Count bug fix (i.e. Death Knight's Scent of Blood count update)
+- Spell Charges fix properly implemented
 
 Hydrogen-4
 - Forum version, include most hotfixes appearing on the forum (flyx, Nephyrin, chinoloco,kouik)
