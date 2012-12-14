@@ -1357,7 +1357,14 @@ end
 
 function BUTTON:MACRO_UpdateUsableSpell(spell)
 
-	local isUsable, notEnoughMana = IsUsableSpell(spell)
+	spell = spell:lower()
+
+	--- necessary for spells changing of subtype between specs, ie, Rain of Fire() and Rain of Fire(Destruction)
+	if (sIndex[spell]) then
+		isUsable, notEnoughMana = IsUsableSpell(sIndex[spell].spellID)
+	else
+		local isUsable, notEnoughMana = IsUsableSpell(spell)
+	end
 
 	if (notEnoughMana) then
 
