@@ -1851,7 +1851,7 @@ function BUTTON:MACRO_PlaceBlizzMacro(action1)
 	 		self.data.macro_Text = body
 	 		self.data.macro_Name = name
 	 		self.data.macro_Watch = name
-	 		self.data.macro_Icon = iIndex[icon:upper()] or ""
+	 		self.data.macro_Icon = icon
 	 	else
 	 		self.data.macro_Text = ""
 	 		self.data.macro_Name = ""
@@ -1886,7 +1886,7 @@ function BUTTON:MACRO_PlaceBlizzEquipSet(action1)
 
 	 		self.data.macro_Text = "/equipset "..action1
 	 		self.data.macro_Equip = action1
-	 		self.data.macro_Icon = iIndex[icon:upper()] or "INTERFACE\\ICONS\\"..icon:upper()
+	 		self.data.macro_Icon = "INTERFACE\\ICONS\\"..icon:upper()
 	 	else
 	 		self.data.macro_Text = ""
 			self.data.macro_Equip = false
